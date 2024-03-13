@@ -29,13 +29,13 @@ fun getGitHeadRefsSuffix(): String {
 
 
 android {
-    compileSdk = 32
+    compileSdk = 31
 
     defaultConfig {
         applicationId = local.requireProperty("project.package_name")
 
-        minSdk = 21
-        targetSdk = 32
+        minSdk = 29
+        targetSdk = 31
 
         versionCode = local.requireProperty("project.version_code").toInt()
         versionName = local.requireProperty("project.version_name")
@@ -96,7 +96,7 @@ android {
                 .forEach { output ->
                     output.outputFileName = output.outputFileName
                             .replace("app-", "geoip.clash.dev-")
-                            .replace(".apk", "-${getGitHeadRefsSuffix().trim()}(${variant.versionCode}).apk")
+                            .replace(".apk", "-${getGitHeadRefsSuffix().trim()}(${variant.versionName}).apk")
                 }
     }
 }

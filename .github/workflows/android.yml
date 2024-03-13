@@ -25,11 +25,10 @@ jobs:
 
     - name: Set variables
       run: |
-        echo "TAG_NAME=$(date +%s)" >> $GITHUB_ENV
+        echo "TAG_NAME=$(date --utc '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
       shell: bash
     - name: Update local.properties
       run: |
-        sed -i "s/^project.version_code=.*/project.version_code=${TAG_NAME}/" local.properties
         sed -i "s/^project.version_name=.*/project.version_name=${TAG_NAME}/" local.properties
         cat local.properties
       shell: bash
@@ -38,7 +37,7 @@ jobs:
     - name: Gradle clean
       run: ./gradlew clean
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew app:assembleRelease
 
     - name: Upload files to GitHub release
       uses: svenstaro/upload-release-action@v2
@@ -54,7 +53,7 @@ jobs:
         apk_name=$(echo "$apk_name" | sed 's/(\([0-9]\+\))/.\1/g')
         mkdir -p release_info
         cd release_info || exit 1
-        echo "{\"newVersion\": ${TAG_NAME}, \"downloadUrl\": \"https://github.com/JohnnySun/ClashForAndroid-Geoip/releases/download/${TAG_NAME}/${apk_name}\"}" | jq '{newVersion, downloadUrl}' > version_info.json
+        echo "{\"newVersion\": ${TAG_NAME}, \"downloadUrl\": \"https://github.com/DumAdudus/ClashForAndroid-Geoip/releases/download/${TAG_NAME}/${apk_name}\"}" | jq '{newVersion, downloadUrl}' > version_info.json
         git init
         git config --local user.name "github-actions[bot]"
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
