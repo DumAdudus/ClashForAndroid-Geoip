@@ -48,17 +48,15 @@ android {
         else
             "@android:drawable/sym_def_app_icon"
 
-        manifestPlaceholders(
-                mapOf("applicationIcon" to iconId)
-        )
+        manifestPlaceholders["applicationIcon"] = iconId
     }
 
     signingConfigs {
         maybeCreate("release").apply {
-            storeFile(rootProject.file(local.requireProperty("keystore.file")))
-            storePassword(local.requireProperty("keystore.password"))
-            keyAlias(local.requireProperty("keystore.key_alias"))
-            keyPassword(local.requireProperty("keystore.key_password"))
+            storeFile = rootProject.file(local.requireProperty("keystore.file"))
+            storePassword = local.requireProperty("keystore.password")
+            keyAlias = local.requireProperty("keystore.key_alias")
+            keyPassword = local.requireProperty("keystore.key_password")
         }
     }
 
