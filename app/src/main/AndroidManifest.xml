@@ -39,7 +39,7 @@ package="stub">
 
         <activity
             android:name="stub.UpdateActivity"
-            android:label="IPinfo MMDB Updater"
+            android:label="Loyalsoldier GEOIP Updater"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Light">
             <intent-filter>
