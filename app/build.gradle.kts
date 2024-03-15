@@ -2,6 +2,7 @@ import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
+import org.json.*
 
 plugins {
     id("com.android.application")
@@ -22,7 +23,8 @@ fun getGitHeadRefsSuffix(): String {
         requestMethod = "GET"
         setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36")
     }.inputStream.use { input ->
-        BufferedReader(InputStreamReader(input)).readText()
+        //BufferedReader(InputStreamReader(input)).readText()
+        JSONObject(JSONTokener(BufferedReader(InputStreamReader(input)))).getString("tag_name")
     }
     return version
 }

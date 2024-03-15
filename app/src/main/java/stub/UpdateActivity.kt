@@ -24,7 +24,7 @@ import java.net.URL
 class UpdateActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityUpdateBinding
-    private val updateUrl = "https://raw.githubusercontent.com/JohnnySun/ClashForAndroid-Geoip/release_info/version_info.json"
+    private val updateUrl = "https://raw.githubusercontent.com/DumAdudus/ClashForAndroid-Geoip/release_info/version_info.json"
     private var downloadUrl: String = ""
     private var newVersion: Int = 0
 
