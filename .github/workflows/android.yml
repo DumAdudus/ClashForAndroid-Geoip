@@ -10,7 +10,24 @@ on:
     branches: [ "geolite.clash.dev" ]
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.geoip_ver_check.outcome }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Check update for geoip
+      id: geoip_ver_check
+      shell: bash
+      run: ./check_geoip_update.sh
+      continue-on-error: true
+
+
   build:
+    needs: check
+    if: needs.check.outputs.status == 'success'
 
     runs-on: ubuntu-latest
 
@@ -25,8 +42,10 @@ jobs:
 
     - name: Set variables
       run: |
-        echo "TAG_NAME=$(date --utc '+%Y%m%d%H%M')" >> $GITHUB_ENV
+        echo "TAG_NAME=$(date --utc '+%m%d%H%M%S')" >> $GITHUB_ENV
+        echo "GEOIP_VER=$(curl -s 'https://api.github.com/repos/Loyalsoldier/geoip/releases/latest' | jq -r '.tag_name')" >> $GITHUB_ENV
       shell: bash
+
     - name: Update local.properties
       run: |
         sed -i "s/^project.version_code=.*/project.version_code=${TAG_NAME}/" local.properties
@@ -47,14 +66,14 @@ jobs:
         file_glob: true
         file: ./app/build/outputs/apk/release/*
         tag: ${{ env.TAG_NAME }}
-    
+
     - name: Git push json to "release_info" branch
       run: |
         apk_name=$(basename $(ls ./app/build/outputs/apk/release/*.apk))
         apk_name=$(echo "$apk_name" | sed 's/(\([0-9]\+\))/.\1/g')
         mkdir -p release_info
         cd release_info || exit 1
-        echo "{\"newVersion\": ${TAG_NAME}, \"downloadUrl\": \"https://github.com/DumAdudus/ClashForAndroid-Geoip/releases/download/${TAG_NAME}/${apk_name}\"}" | jq '{newVersion, downloadUrl}' > version_info.json
+        echo "{\"newVersion\": ${TAG_NAME}, \"downloadUrl\": \"https://github.com/DumAdudus/ClashForAndroid-Geoip/releases/download/${TAG_NAME}/${apk_name}\", \"geoipVer\": ${GEOIP_VER}}" | jq '{newVersion, downloadUrl, geoipVer}' > version_info.json
         git init
         git config --local user.name "github-actions[bot]"
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"

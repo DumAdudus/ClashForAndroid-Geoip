@@ -22,9 +22,8 @@ fun getGitHeadRefsSuffix(): String {
         useCaches = false
         requestMethod = "GET"
         setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36")
-    }.inputStream.use { input ->
-        //BufferedReader(InputStreamReader(input)).readText()
-        JSONObject(JSONTokener(BufferedReader(InputStreamReader(input)))).getString("tag_name")
+    }.inputStream.bufferedReader().use { input ->
+        JSONObject(input.readText()).getString("tag_name")
     }
     return version
 }
