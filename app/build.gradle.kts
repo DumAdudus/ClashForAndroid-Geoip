@@ -95,7 +95,7 @@ android {
                 .forEach { output ->
                     output.outputFileName = output.outputFileName
                             .replace("app-", "geoip.clash.dev-")
-                            .replace(".apk", "-${getGitHeadRefsSuffix().trim()}(${variant.versionName}).apk")
+                            .replace(".apk", "-${getGitHeadRefsSuffix().trim()}-${variant.versionName}.apk")
                 }
     }
 }
