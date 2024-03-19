@@ -1,17 +1,28 @@
-name: Android CI
+name: Android release
 
 on:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
-  push:
-    branches: [ "geolite.clash.dev" ]
-  pull_request:
-    branches: [ "geolite.clash.dev" ]
 
 jobs:
+  check-geoip-update:
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.geoip_ver_check.outcome }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check update for geoip
+      id: geoip_ver_check
+      run: ./check_geoip_update.sh
+      continue-on-error: true
+
   build:
     runs-on: ubuntu-latest
+    needs: check-geoip-update
+    if: needs.check-geoip-update.outputs.status == 'success'
+
     steps:
     - uses: actions/checkout@v4
 
@@ -36,43 +47,7 @@ jobs:
       run: ./gradlew clean
     - name: Build with Gradle
       run: ./gradlew app:assembleRelease
-    - name: Save version info
-      run: |
-        apk_name=$(basename $(ls ./app/build/outputs/apk/release/*.apk))
-        echo "{\"newVersion\": ${TAG_NAME}, \"downloadUrl\": \"${{ github.server_url }}/${{ github.repository }}/releases/download/${TAG_NAME}/${apk_name}\", \"geoipVer\": ${GEOIP_VER}}" | jq '{newVersion, downloadUrl, geoipVer}' > version_info.json
-    - name: Save artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: my-artifact
-        path: |
-          ./app/build/outputs/apk/release/
-          version_info.json
 
-  check-geoip-update:
-    runs-on: ubuntu-latest
-    outputs:
-      status: ${{ steps.geoip_ver_check.outcome }}
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Check update for geoip
-      id: geoip_ver_check
-      run: ./check_geoip_update.sh
-      continue-on-error: true
-
-  publish:
-    runs-on: ubuntu-latest
-    needs: [build, check-geoip-update]
-    if: needs.check-geoip-update.outputs.status == 'success'
-
-    steps:
-    - uses: actions/download-artifact@v4
-      with:
-        name: my-artifact
-    - name: Extract tag name
-      run: |
-        ls -R
-        echo "TAG_NAME=$(jq -r .newVersion version_info.json)" >> $GITHUB_ENV
     - name: Upload files to GitHub release
       uses: svenstaro/upload-release-action@v2
       with:
@@ -81,7 +56,12 @@ jobs:
         file: app/build/outputs/apk/release/*
         tag: ${{ env.TAG_NAME }}
 
-    - name: Git push json to "release_info" branch
+    - name: Generate version info
+      run: |
+        apk_name=$(basename $(ls ./app/build/outputs/apk/release/*.apk))
+        echo "{\"newVersion\": ${TAG_NAME}, \"downloadUrl\": \"${{ github.server_url }}/${{ github.repository }}/releases/download/${TAG_NAME}/${apk_name}\", \"geoipVer\": ${GEOIP_VER}}" | jq '{newVersion, downloadUrl, geoipVer}' > version_info.json
+
+    - name: Git push version info to "release_info" branch
       run: |
         mkdir -p release_info
         cd release_info || exit 1
