@@ -28,12 +28,14 @@ jobs:
 
     - name: Set variables
       run: |
-        echo "TAG_NAME=$(date --utc '+%m%d%H%M%S')" >> $GITHUB_ENV
+        ts=$(date --utc '+%Y%m%d%H%M')
+        echo "TAG_NAME=${ts}" >> $GITHUB_ENV
+        echo "VER_CODE=${ts::-2}" >> $GITHUB_ENV
         echo "GEOIP_VER=$(curl -s 'https://api.github.com/repos/Loyalsoldier/geoip/releases/latest' | jq -r '.tag_name')" >> $GITHUB_ENV
 
     - name: Update local.properties
       run: |
-        sed -i "s/^\(project.version_code\)=.*/\1=${TAG_NAME}/" local.properties
+        sed -i "s/^\(project.version_code\)=.*/\1=${VER_CODE}/" local.properties
         sed -i "s/^\(project.version_name\)=.*/\1=${TAG_NAME}/" local.properties
         cat local.properties
 
@@ -59,7 +61,7 @@ jobs:
     - name: Generate version info
       run: |
         apk_name=$(basename $(ls ./app/build/outputs/apk/release/*.apk))
-        echo "{\"newVersion\": ${TAG_NAME}, \"downloadUrl\": \"${{ github.server_url }}/${{ github.repository }}/releases/download/${TAG_NAME}/${apk_name}\", \"geoipVer\": ${GEOIP_VER}}" | jq '{newVersion, downloadUrl, geoipVer}' > version_info.json
+        echo "{\"newVersion\": ${VER_CODE}, \"downloadUrl\": \"${{ github.server_url }}/${{ github.repository }}/releases/download/${TAG_NAME}/${apk_name}\", \"geoipVer\": ${GEOIP_VER}}" | jq '{newVersion, downloadUrl, geoipVer}' > version_info.json
 
     - name: Git push version info to "release_info" branch
       run: |

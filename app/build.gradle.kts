@@ -112,6 +112,7 @@ task("fetchMMDB") {
             instanceFollowRedirects = true
             useCaches = false
             requestMethod = "GET"
+            setRequestProperty("Accept-Encoding", "gzip")
             setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36")
         }.inputStream.use { input ->
             FileOutputStream(outputDir.resolve("Country.mmdb")).use { output ->
